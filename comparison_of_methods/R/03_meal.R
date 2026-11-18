@@ -107,14 +107,14 @@ ref_lines_df <- tibble::tribble(
   "nMSE / Eff. Bound",    1
 ) |>
   tidyr::crossing(
-    framework = c("{RieszCML}", "{Standard}")
+    framework = c("{RieszCML}", "{tmle3}")
   ) |>
   mutate(
     measure = factor(
       measure,
       levels = c("Bias", "Coverage", "Mean Squared Error", "nMSE / Eff. Bound")
     ),
-    framework = factor(framework, levels = c("{RieszCML}", "{Standard}"))
+    framework = factor(framework, levels = c("{RieszCML}", "{tmle3}"))
   )
 
 plot_df <- eval_results$summary |>
@@ -128,9 +128,9 @@ plot_df <- eval_results$summary |>
     framework = ifelse(
       stringr::str_detect(.method_name, "riesz"),
       "{RieszCML}",
-      "{Standard}"
+      "{tmle3}"
     ),
-    framework = factor(framework, levels = c("{RieszCML}", "{Standard}")),
+    framework = factor(framework, levels = c("{RieszCML}", "{tmle3}")),
     nuisances = case_when(
       stringr::str_detect(.method_name, "g_misspecified") ~ "PS misspecified",
       stringr::str_detect(.method_name, "q_misspecified") ~ "OR misspecified",
@@ -166,8 +166,8 @@ plot_df |>
     linetype = "solid",
     linewidth = 0.8
   ) +
-  geom_point(alpha = 0.75) +
-  geom_line(alpha = 0.75) +
+  geom_point(position = position_dodge(width = 400), alpha = 0.75) +
+  geom_line(position = position_dodge(width = 400), alpha = 0.75) +
   theme_minimal() +
   ggh4x::facet_grid2(
     rows = vars(measure),      # metrics down the rows
@@ -188,7 +188,7 @@ plot_df |>
       ),
       measure == "Mean Squared Error" ~ scale_y_continuous(
         n.breaks = 4,
-        labels = label_number(accuracy = 0.01)
+        labels = label_number(accuracy = 0.001)
       ),
       measure == "nMSE / Eff. Bound" ~ scale_y_continuous(
         limits = c(.75, 1.26),
@@ -199,7 +199,7 @@ plot_df |>
   scale_x_continuous(breaks = c(100, 1600, 3600, 6400)) +
   see::scale_color_okabeito() +
   labs(
-    title = "Convergence diagnostics for {RieszCML} and {Standard} TMLE",
+    title = "Convergence diagnostics for {RieszCML} and Standard TMLE",
     subtitle = "Black lines indicate ideal bias, nominal coverage, and efficiency ratio = 1",
     x = "sample size",
     y = "",
